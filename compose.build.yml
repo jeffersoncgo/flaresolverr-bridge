@@ -1,0 +1,15 @@
+services:
+  flaresolverr-bridge:
+    container_name: flaresolverr-bridge
+    build: .           # 👈 Builds from local Dockerfile
+    image: flaresolverr-bridge  # 👈 Optional name/tag for reuse
+    ports:
+      - "8195:3000"
+    volumes:
+      - "/LocalPath/flaresolverr-bridge:/app" #Optional, in case you wanna modify things.
+    healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:3000"]
+        interval: 1m30s
+        timeout: 10s
+        retries: 3
+    restart: unless-stopped

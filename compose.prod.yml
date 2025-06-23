@@ -1,0 +1,15 @@
+services:
+  flaresolverr-bridge:
+    container_name: flaresolverr-bridge
+    image: jeffersoncgo/flaresolverr-bridge
+    environment:
+      port: 3005
+    network_mode: "host"
+    # volumes:
+    #   - "/LocalPath/flaresolverr-bridge:/app" #Optional, in case you wanna modify things.
+    healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:3005"]
+        interval: 1m30s
+        timeout: 10s
+        retries: 3
+    restart: unless-stopped

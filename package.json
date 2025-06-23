@@ -1,0 +1,21 @@
+{
+  "name": "flaresolverr-bridge",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "bridge.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node bridge.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "abort-controller": "^3.0.0",
+    "axios": "^1.10.0",
+    "commander": "^14.0.0",
+    "express": "^5.1.0",
+    "url": "^0.11.4"
+  }
+}
