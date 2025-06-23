@@ -22,6 +22,9 @@ const port = options.port || process.env.port || 3000;
 
 // 🧠 Load target state
 let targets = [];
+
+const targetsInfo = {}
+
 try {
   if (fs.existsSync(CONFIG_PATH)) {
     targets = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
@@ -85,6 +88,43 @@ const forwardRequest = async (req) => {
   }
 };
 
+const getStatus = async _url => {
+  try {
+    const now = performance.now();
+    const data = await axios.get(`${_url}`, { timeout: 4000 });
+    const latency = performance.now() - now;
+    const status = data.status === 200 ? 'online' : 'offline';
+
+    targetsInfo[_url] ??= {url: _url};
+
+    const target = targetsInfo[_url];
+
+    target.statusChanged = target.status != status;
+    target.latencyChanged = target.latency != data.latency;
+    target.status = status;
+    target.latency = Math.round(latency) ;
+
+    if(target.statusChanged)
+      target.statusSince = new Date();
+
+    return target;
+  } catch {
+    targetsInfo[_url] ??= {url: _url};
+
+    const target = targetsInfo[_url];
+    
+    target.statusChanged = target.status != 'offline';
+    target.latencyChanged = target.latency != null;
+    target.status = 'offline';
+    target.latency = null;
+    
+    if(target.statusChanged)
+      target.statusSince = new Date();
+    
+    return target;
+  }
+}
+
 // 🔁 Proxy everything
 app.use('/v1', async (req, res) => {
   // Log thats a connection is comming
@@ -118,26 +158,21 @@ app.delete('/api/targets', (req, res) => {
 });
 
 // 🔄 Ping all instances
-app.get('/api/ping', async (_, res) => {
-  const checks = await Promise.all(targets.map(async (url) => {
-    try {
-      const now = performance.now();
-      const r = await axios.get(`${url}`, { timeout: 4000 });
-      const latency = performance.now() - now;
-      return { url, status: r.status === 200 ? 'online' : 'offline', latency: Math.round(latency) };
-    } catch {
-      return { url, status: 'offline', latency: null };
-    }
-  }));
-
+app.get('/api/ping/all', async (_, res) => {
+  const checks = await Promise.all(targets.map(async (url) => await getStatus(url)));
   // Sort: online first, then by ascending latency
   const sorted = checks.sort((a, b) => {
     if (a.status === 'offline') return 1;
     if (b.status === 'offline') return -1;
     return a.latency - b.latency;
   });
-
   res.json(sorted);
+});
+
+app.get('/api/ping/:target',async (req, res) => {
+  const { target } = req.params;
+  const status = await getStatus(target);
+  res.json(status);
 });
 
 app.listen(port, () => console.log(`🔁 Flaresolverr Bridge UI + Proxy @ http://localhost:${port}`));

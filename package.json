@@ -6,7 +6,9 @@
   "main": "bridge.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node bridge.js"
+    "start": "node bridge.js",
+    "docker_build": "docker build -t jeffersoncgo/flaresolverr-bridge:latest .",
+    "docker_push": "docker push jeffersoncgo/flaresolverr-bridge:latest"
   },
   "keywords": [],
   "author": "",
