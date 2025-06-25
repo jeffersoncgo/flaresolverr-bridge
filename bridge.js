@@ -137,7 +137,7 @@ app.use('/v1', async (req, res) => {
 app.get('/api/targets', (req, res) => res.json(targets));
 
 app.post('/api/targets', (req, res) => {
-  const { url } = req.body;
+  let url = req.body.url
   if (!url || typeof url !== 'string' || targets.includes(url)) {
     return res.status(400).json({ error: 'Invalid or duplicate URL' });
   }
@@ -145,8 +145,10 @@ app.post('/api/targets', (req, res) => {
   if (url.endsWith('/')) {
     url = url.slice(0, -1);
   }
-  targets.push(url);
-  saveTargets();
+  if(!targets.includes(url)) {
+    targets.push(url);
+    saveTargets();
+  }
   res.status(201).json({ success: true });
 });
 

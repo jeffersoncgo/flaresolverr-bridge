@@ -157,6 +157,22 @@
       }
     }
 
+    async function removeTarget(url) {
+      if (!confirm(`Are you sure you want to remove ${url}?`)) return;
+      await fetch('/api/targets', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      delete targets[url];
+      const id = `target-${url.replace(/([.:/https?])+/g, '-')}`;
+      const li = document.getElementById(id);
+      if (li) {
+        li.remove();
+      }
+      refresh();
+    }
+
     async function refresh(...params) {
       await getTargets(...params);
       document.getElementById('lastUpdated').textContent = `Last update: ${new Date().toLocaleTimeString()}`;
@@ -172,14 +188,14 @@
     refresh = refresh.exec.bind(refresh);
 
 
-    async function removeTarget(url) {
-      await fetch('/api/targets', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-      });
-      refresh();
-    }
+    // async function removeTarget(url) {
+    //   await fetch('/api/targets', {
+    //     method: 'DELETE',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ url })
+    //   });
+    //   refresh();
+    // }
 
     document.getElementById('addForm').onsubmit = async (e) => {
       e.preventDefault();
